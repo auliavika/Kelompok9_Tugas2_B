@@ -60,13 +60,25 @@ function showGames() {
     games.forEach((game, index) => {
         console.log(`${index + 1}. ${game.name} - ${game.developer} (${game.year})`);
     });
-    console.log("\n");
     setTimeout(mainMenu, 1000);
 }
 
 // Show game details
 function showGameDetail() {
     const games = loadGames();
+    
+    if (games.length === 0) {
+        console.log("\nTidak ada game dalam database.");
+        setTimeout(mainMenu, 1000);
+        return;
+    }
+
+    // Tampilkan daftar game terlebih dahulu
+    console.log("\n=== Daftar Game Open-World ===");
+    games.forEach((game, index) => {
+        console.log(`${index + 1}. ${game.name} - ${game.developer} (${game.year})`);
+    });
+
     rl.question("\nMasukkan nomor game yang ingin dilihat: ", (index) => {
         const gameIndex = parseInt(index) - 1;
         const game = games[gameIndex];
@@ -84,13 +96,76 @@ function showGameDetail() {
     });
 }
 
+// Delete a game
+function deleteGame() {
+    const games = loadGames();
+    // Tampilkan daftar game terlebih dahulu
+    console.log("\n=== Daftar Game Open-World ===");
+    games.forEach((game, index) => {
+        console.log(`${index + 1}. ${game.name} - ${game.developer} (${game.year})`);
+    });
+    
+    rl.question("\nMasukkan nomor game yang ingin dihapus: ", (index) => {
+        const gameIndex = parseInt(index) - 1;
+
+        if (gameIndex >= 0 && gameIndex < games.length) {
+            const deletedGame = games.splice(gameIndex, 1);
+            saveGames(games);
+            console.log(`\nGame '${deletedGame[0].name}' berhasil dihapus!`);
+        } else {
+            console.log("\nGame tidak ditemukan!");
+        }
+        setTimeout(mainMenu, 1000);
+    });
+}
+
+// Update a game
+function updateGame() {
+    const games = loadGames();
+    
+    // Tampilkan daftar game terlebih dahulu
+    console.log("\n=== Daftar Game Open-World ===");
+    games.forEach((game, index) => {
+        console.log(`${index + 1}. ${game.name} - ${game.developer} (${game.year})`);
+    });
+
+    rl.question("\nMasukkan nomor game yang ingin diperbarui: ", (index) => {
+        const gameIndex = parseInt(index) - 1;
+
+        if (gameIndex >= 0 && gameIndex < games.length) {
+            rl.question("Masukkan nama game baru: ", (name) => {
+                rl.question("Masukkan developer baru: ", (developer) => {
+                    rl.question("Masukkan tahun rilis baru: ", (year) => {
+                        rl.question("Masukkan platform baru (pisahkan dengan koma): ", (platform) => {
+                            games[gameIndex] = {
+                                name,
+                                developer,
+                                year: parseInt(year),
+                                platform: platform.split(",").map(p => p.trim())
+                            };
+                            saveGames(games);
+                            console.log("\nGame berhasil diperbarui!");
+                            setTimeout(mainMenu, 1000);
+                        });
+                    });
+                });
+            });
+        } else {
+            console.log("\nGame tidak ditemukan!");
+            setTimeout(mainMenu, 1000);
+        }
+    });
+}
+
 // Main menu
 function mainMenu() {
     console.log("\n=== Database Game Open-World ===");
     console.log("1. Lihat daftar game");
     console.log("2. Tambah game");
     console.log("3. Lihat detail game");
-    console.log("4. Keluar");
+    console.log("4. Perbarui game");
+    console.log("5. Hapus game");
+    console.log("6. Keluar");
 
     rl.question("\nMasukkan nomor: ", (answer) => {
         switch (answer.trim()) {
@@ -102,7 +177,14 @@ function mainMenu() {
                 break;
             case "3":
                 showGameDetail();
+                break;
             case "4":
+                updateGame();
+                break;
+            case "5":
+                deleteGame();
+                break;
+            case "6":
                 console.log("\nTerima kasih telah menggunakan database game!");
                 rl.close();
                 break;
